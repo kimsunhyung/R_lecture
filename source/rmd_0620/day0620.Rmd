@@ -1,0 +1,21 @@
+---
+title: "day0620"
+output: html_document
+date: '2022-06-20'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 3장
+- 벡터의 종류 : 숫자, 정수, 문자, 범주, 논리형으로 구분됨
+###문자형 벡터
+- 문자 넣을때는 큰 따음표를 넣고 입력
+```{r}
+a <- "1"
+```
+
+- num_vector에 대해 배움.
+- 식 사용 시 수를 전부 다 기입하지 않고, c(combine)을 활용하여 진행해야 함
+

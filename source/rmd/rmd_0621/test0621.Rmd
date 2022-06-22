@@ -1,0 +1,137 @@
+---
+title: "데이터 불러오기, 연산 및 기본 함수"
+output:
+  html_document:
+    keep_md: true
+date: '2022-06-21'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+- 경로 설정이 매우중요
+
+```{r}
+getwd()
+# setwd("c:/")
+```
+
+- csv 파일 / 엑셀파일
+
+
+```{r}
+mpg1 <- read.csv("mpg1.csv", stringsAsFactors = T)
+str(mpg1)
+```
+
+- stringAsFaactors -> 범주형 벡터로 바뀔 것 인가?
+
+- 평균
+```{r}
+mean(mtcars$mpg)
+```
+- 분산
+```{r}
+sd(mtcars$mpg)
+```
+- 표준편차
+```{r}
+var(mtcars$mpg)
+```
+
+
+- 수리통계 -> 증명
+- 일반인 / 비전공자 -> 활용/의미
+sd(mtcars$mpg)
+```{r}
+sd(mtcars$mpg)
+```
+
+Descriptive statstics
+
+- 1반의 키의 표준편차 6.026948
+- 2반의 키의 표준편차 10.026948
+- 3반의 키의 표준편차 3.026948
+
+- 사분위수
+- 전체 수를 4등분 한 수
+```{r}
+quantile (mtcars$mpg)
+```
+
+- IQR 
+- 1사분위 수와 3사분위 수 사이의 거리
+
+- 소득분위
+- 통계분석 / 머신러닝 -> 이상치 제거할 때 활용
+
+
+- 통계 요약 구하기
+```{r}
+summary(iris)
+```
+
+- 중간값 : 100명, 50번째 키순에 해당하는 값
+- 평균 : 전체 키의 합 / 100
+
+```{r}
+summary(iris$Sepal.Length)
+```
+
+- 빈도분석
+- 범주별 빈도 -> 문자
+
+```{r}
+str(mpg1)
+
+table(mpg1$trans)
+table(mpg1$manufacturer)
+
+table(mpg1$trans, mpg1$manufacturer)
+```
+
+
+- 빈도의 비율 구하기
+
+```{r}
+a <- table(mpg1$trans)
+prop.table(a)
+
+b<- table(mpg1$trans,mpg1$drv)
+prop.table(b)
+
+prop.table(table(mpg1$manufacturer))
+```
+
+- 행과 열의 비율 형식을 맞춘다
+가로합을 1로 두고 계산한 비율
+```{r}
+prop.table(b, margin = 1) 
+```
+세로합을 1로 두고 계산한 비율
+```{r}
+prop.table(b, margin = 2) 
+
+```
+
+- 소숫점 아래 자리 지정
+
+```{r}
+round(0.32123141, 2)
+a= table(mpg1$trans)
+b= prop.table(a)
+b
+round(b,2)
+
+round(prop.table(table(mpg1$trans)), 2)
+
+```
+
+
+- 시각화 이미지
+- ggplot2 패키지 활용
+
+- 테이블 이미지
+- gt 패키지 활용 -> 고급 과정
+

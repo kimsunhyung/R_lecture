@@ -1,0 +1,99 @@
+---
+title: "day0622"
+output:
+  html_document:
+    keep_md: true
+date: '2022-06-22'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# install.packages("dplyr")
+# install.packages("ggplot2")
+library(dplyr)
+library(ggplot2)
+```
+
+## 데이터 불러오기
+- 데이터를 불러오세요.
+
+```{r}
+exam_na <- read.csv("data/exam_na.csv")
+str(exam_na)
+```
+
+Is this yours? / Ture / Flase
+
+## (2) 결측치 빈도 구하기
+-table() : 빈도 구하기
+```{r}
+table(is.na(exam_na))
+table(is.na(exam_na$korean))
+summary(is.na(exam_na))
+summary(exam_na)
+```
+
+## 결측치 처리 방법
+ - 제거하고 처리하기
+ - 다른 값으로 대체하기
+   + 평균 입력
+
+### (1)결측치를 제외하고 분석하기
+P.160
+na.rm = T => 결측치가 있을시 제거 해달라는 뜻
+```{r}
+mean(exam_na$korean,na.rm = TRUE)
+```
+
+- na.omit()
+  - 결측치가 있는 행을 모두 제거.(가급적 사용 금지)
+
+- filter()
+```{r}
+exam_na %>% filter(is.na(korean))
+```
+- 이번에는 (!is.na(korean))을 적용한다.
+
+### (2) 결측치를 다른 값으로 대체하기
+ - imputation 참고자료
+  + [A Solution to Missing Data: Imputation Using R](https://www.kdnuggets.com/2017/09/missing-data-imputation-using-r.html)
+  + [R 결측값(NA) 제거, 대체 방법](https://velog.io/@lifeisbeautiful/R-%EA%B2%B0%EC%B8%A1%EA%B0%92NA-%EC%A0%9C%EA%B1%B0-%EB%8C%80%EC%B2%B4-%EB%B0%A9%EB%B2%95)
+  
+  
+## 이상치
+- 데이터의특정 값이 뭔가 '이상'이 있다.
+- Case1 : 정해진 범주에서 벗어난 데이터
+  +2000년 4월 30일 / 2000년 40월 30일 --> 9999
+- Case2 : 숫자/ 아웃라이어(outlier) / 극단값
+  + 평균 : 평균 임금 320만원 / 손흥민 몇십억원 
+  
+```{r}
+mpg1_out <- read.csv("data/mpg1_out.csv")
+```
+
+- ifelse
+- 만약 ~라면, 내가 무엇을 할것이다. (가정법)
+- 만약 trans의 값이 3 이라면, 결측치로 바꿔주세요. 나머지는 그대로 유지해 주세요
+
+```{r}
+mpg1_out$trans <- ifelse(mpg1_out$trans == 3, NA, mpg1_out$trans) 
+table(is.na(mpg1_out$trans))
+```
+- 결측치 제거
+```{r}
+mpg1_out %>% filter(trans != 3)
+```
+### 극단치 처리
+- 숫자 데이터 boxplot()
+- boxplot() 함수를 통해서 극단치가 있는지 없는지 확인 가능
+- IQR :3사분위 - 1사분위
+- 경계값 :IQR +IQR *1.5 상한 / IQR - IQR * 1.5
+```{r}
+mpg1 <- read.csv("data/mpg1.csv")
+boxplot(mpg1$cty)
+boxplot(mpg1$cty)$stats
+```
+
