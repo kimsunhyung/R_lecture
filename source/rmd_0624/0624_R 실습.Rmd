@@ -1,0 +1,165 @@
+---
+title: "0624_R 실습"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    keep_md: true
+date: '2022-06-24'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 한국인의 정신 건강 분석
+
+- 분석 파일 불러오기
+```{r}
+# install.packages(dplyr)
+# install.packages(ggplot2)
+library(dplyr)
+library(ggplot2)
+```
+```{r}
+# install.packages("foreign")
+library(foreign)
+
+mental <- read.spss("data/한국행정연구원_사회통합실태조사_데이터_2019.sav")
+class(mental)
+mental <- as.data.frame(mental) # 데이터 프레임 변환하기
+class(mental)
+str(mental)
+```
+- 분석변수 추출하고 이름 변경
+
+```{r}
+# 추출변수 (변수 설명, 척도 범위) :영어 변수 이름
+mental <- mental %>% 
+  select(q32_2,q1_4,q32_1,q34_1,q52,d17,d1,d2,ara) %>%
+  rename(suicide=q32_2,
+         satisfaction=q1_4,
+         loneliness=q32_1,
+         family_belief=q34_1,
+         wealth=q52,
+         health=d17,
+         sex=d1,
+         age=d2,
+         area=ara)
+
+
+```
+
+- 변수 유형 변경과 정리
+```{r}
+str(mental)
+
+table(mental$suicide)# suicide의 빈도
+table(mental$health)
+table(mental$satisfaction)
+
+mental$suicide <- as.integer(mental$suicide)
+mental$satisfaction <- as.integer(mental$satisfaction)
+mental$loneliness <- as.integer(mental$loneliness)
+mental$family_belief <- as.integer(mental$family_belief)
+mental$wealth <- as.integer(mental$wealth)
+mental$health <- as.integer(mental$health)
+
+table(mental$suicide) # 빈도확인
+table(mental$health)
+table(mental$satisfaction)
+```
+```{r}
+mental$satisfaction <- mental$satisfaction-1 #범주 숫자 보정작업업
+mental$wealth <- mental$wealth-1
+table(mental$satisfaction)
+```
+```{r}
+mental$age <- as.character(mental$age) # 범주별 빈도 구하기
+mental$sex <- as.character(mental$sex)
+mental$area <- as.character(mental$area)
+table(mental$age)
+table(mental$area)
+```
+```{r}
+mental$age <- ifelse(mental$age=="19~29세","20대",
+                     ifelse(mental$age=="60~69세","60대", mental$age))
+summary(mental)
+```
+```{r}
+# 성별 빈도 분석
+mental %>% 
+  group_by(sex) %>% # 변수로 분류
+  summarise(n=n()) %>% # 범주별 빈도 구하기
+  mutate(total=sum(n),# 빈도 총계 구하기
+         pct=round(n/total*100,1))
+```
+```{r}
+#연령대별 빈도분석
+mental %>% 
+  group_by(age) %>% 
+  summarise(n=n()) %>% 
+  mutate(total=sum(n),
+         pct=round(n/total*100,1))
+```
+```{r}
+# 성과 연령대의 교차 빈도 구하기
+table(mental$sex, mental$age)
+
+# 성과 연령대의 교차 백분율 구하기, 행별로 100%기준, 소수점 한자리
+round(prop.table(table(mental$sex, mental$age),1)*100,1)
+# 교차 분석 검정
+chisq.test(mental$sex, mental$age)
+```
+- 평균 분석
+```{r}
+mental %>% 
+  summarise(m1=mean(suicide),m2=mean(satisfaction),m3=mean(loneliness),
+            m4=mean(family_belief),m5=mean(wealth),m6=mean(health))
+```
+- 삶의 만족도와 외로움이 자살 충동에 미치는 영향
+```{r}
+RA <- lm(data=mental,suicide~satisfaction+loneliness)#다중회귀 분석
+summary(RA)
+```
+- 삶의 만족도와 외로움의 상관관계
+
+```{r}
+cor.test(mental$satisfaction,mental$loneliness)
+```
+- 3개 독립변수가 삶의 만족도에 미치는 영향
+```{r}
+RA <- lm(data=mental,satisfaction~family_belief+wealth+health)
+summary(RA)
+```
+- 3개의 독립변수가 외로움에 미치는 영향
+```{r}
+RA <- lm(data=mental,loneliness~family_belief+wealth+health)
+summary(RA)
+```
+- 성별 삶의 만족도 차이
+```{r}
+t.test(data=mental,satisfaction~sex)
+```
+- 연령대별 삶의 만족도 차이
+```{r}
+mental %>% 
+  group_by(age) %>%  # age 변수를 범주별로 분류
+  summarise(m=mean(satisfaction)) %>% # age 범주별 평균 구하기
+  arrange(desc(m))#평균값 순차 내림차 순으로 정렬
+```
+- 지역별 삶의 만족도 분석과 그래프 그리기
+```{r}
+area_satisfaction <- mental %>% 
+  group_by(area) %>% 
+  summarise(m=mean(satisfaction)) %>% 
+  arrange(desc(m))
+
+ggplot(data=area_satisfaction,aes(x=reorder(area,m),y=m))+
+  geom_col()+
+  ggtitle("지역별 만족도") +
+  xlab("지역")+
+  ylab("만족도")+
+  coord_flip() # 막대 90도 회전시키기
+```
+
