@@ -1,5 +1,5 @@
 ---
-title: "데이터 불러오기, 연산 및 기본 함수"
+title: "0621_데이터 불러오기, 연산 및 기본 함수"
 output:
   html_document:
     keep_md: true

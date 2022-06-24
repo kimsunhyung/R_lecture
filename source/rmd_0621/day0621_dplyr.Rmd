@@ -1,5 +1,5 @@
 ---
-title: "day0621_dplyr에 대하여"
+title: "0621_R dplyr에 대하여"
 output:
   html_document:
     keep_md: true

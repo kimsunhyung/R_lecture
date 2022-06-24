@@ -1,5 +1,5 @@
 ---
-title: "day-1 visualization"
+title: "0617_R 시각화"
 date: '2022-06-17'
 ---
 

@@ -1,0 +1,290 @@
+---
+title: "0623_R 통계"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    keep_md: true
+date: '2022-06-23 10:00:00'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## 통계
+ - 기술통계 : 평균, 최솟값, 최댓값, 중간값
+ - 추론통계 : 변수간의 관계를 파악/ 새로운 사실을 추정(=발견)
+              
+              + 평균 차이 검정
+                - 수치 데이터
+                - 가설 검정 : 각 그룹간의 평균값의 차이를 검정
+                - 남자의 평균 키와 여자의 키는 차이가 있을 것이다.
+                
+              + 교차 분석 (= 빈도분석)
+                - 범주 데이터
+                - 가설 검정 : 각 범주별 빈도를 활용해서 관계성을 검정
+                
+              + 상관 관계 분석 
+                - 수치 데이터  
+                - 상향될 경우 양의 상관관계, 하향될 경우 음의 상관관계
+                - 두 변수간의 상관관계가 있느냐 없느냐?
+                
+              + 단순 회귀 분석
+                - y = ax + b
+                - 온도, 판매량
+                - 가설 검정
+                  + 기온(독립변수)가 판매량(종속변수)에 긍적적인영향을 
+                    주고 있을 것이다.
+### 통계 검정
+ - 가설
+ - Hypothesis
+ ---> 공부 방법 : 선행 연구, 해당 분석방법의 가설설정 예시 존재
+  - 연구 : 내가 궁금한 것을 찾아내는 것 (ex) 남자와 여자의 키가 동일
+  
+  - 귀무가설 : 두 그룹 간의 평균 차이가 없다.
+  - 대립가설 : 두 그룹 간의 평균 차이가 있다.
+  
+  - 가설검정에서 인정하는 유의 수준
+    + 5%, 1%, 0.1% 또는 10%
+    
+  - 오차범위 내에 있다. 
+    - 여론 조사 A 후보 44%, B 후보 42% 시 누가 우세하다 할 수 없음.
+    - 오차범위 내에 있을 시정확한 결과를 가져올 수 없음.
+  - 오차범위 밖에 있다.
+    - 조사의 결과가 확실함.
+  
+  - 자 평균 키, 여자 평균 키 실험  
+    - 유의 수준 > 0.05 
+  
+### 두 집단의 평균 차이 검정
+```{r}
+mpg1 <- read.csv("data/mpg1.csv", stringsAsFactors = F)
+
+t.test(data=mpg1, cty~trans) #t.test(mpg1$cty~mpg1$trans)와 같음
+
+```
+  - t.test
+    - 어떻게 데이터를 입력하는지 확인
+    - p-value, 유의수준 0.05 이상 : 귀무가설, 0.05 이내 :대립가설
+  
+  - 시각화
+```{r}
+library(ggplot2)
+ggplot(mpg1, aes(x=trans, y=cty)) + geom_boxplot() 
+```
+    - 시각화로 명확하게 결과를 나타내기가 어려움 - t.test 검정 필요
+  
+  - t.test 검정
+    + 귀무가설 : auto 와 manual의 cty 평균은 차이가 없다.
+    + 대립가설 : auto 와 manual의 cty 평균은 차이가 있다.
+
+```{r}
+t.test(data =mpg1, cty ~ trans)
+# 종속변수 ~ 독립변수
+# 반응변수 ~ 설명변수
+# y          x
+```
+
+ ### 두 그룹의 평균 차이 검정
+   + 사전 필수 검증
+   + 등분산 검정
+     + 두 그룹간의 분산이 비슷하면 --> t.test (모수 검정)
+     + 두 그룹간의 분산이 다르면 --> 비모수 검정
+   + 등분산 검정
+     + 귀무가설 : 두 그룹간ㅇ의 분산이 비슷하다.
+      - p.value > 0.05
+     + 대립가설 : 두 그룹간의 분산이 다르다.
+     
+```{r}
+var.test(data = mpg1, cty~trans)
+```
+     
+```{r}
+ggplot(mpg1, aes(x=cty, fill=trans)) + #geom_histogram()
+  geom_density(alpha = 0.1)
+```
+ ### 교차 분석 => 개발자도 알 필요가 있음.
+    - 범주형 변수들이 관계가 있다는 것을 검정
+    - 비율에 차이가 있는지 검정
+    - 교차분석 검정은 R의 chisq.test() 함수로 진행
+    - 귀무가설 : trans에 따라 drv(4, f,r)의 (비율) 차이가 없다.
+    - 대립가설 : trans에 따라 drv 차이가 있다.
+    - 빈도표 / 비율
+```{r}
+table(mpg1$trans, mpg1$drv) #교차분석
+```
+    
+```{r}
+prop.table(table(mpg1$trans,mpg1$drv), 1)
+```
+
+ - auto 4륜 구동 (4) 인 47.8%
+ - manual 전륜구동(f) 53.2% 가장 많음
+ - 실제로 통계적으로 봤을 때, 차이가 있는지 검정
+ 
+ - 귀무가설 : trans에 따라 drv(4, f,r)의 (비율) 차이가 없다.
+ - 대립가설 : trans에 따라 drv 차이가 있다.
+ 
+```{r}
+chisq.test(mpg1$trans, mpg1$drv)
+```
+
+## 실습
+
+ - 패키지 설치 및 데이터 불러오기
+```{r}
+# install.packages("dplyr")
+# install.packages("ggplot2")
+library(dplyr)
+library(ggplot2)
+```
+```{r}
+# install.packages("readxl")
+library(readxl)
+seoulair <-read_excel("data/서울대기오염_2019.xlsx")
+
+str(seoulair)
+```
+- 분석 변수 추출, 변수이름 변경
+```{r}
+seoulair <- seoulair %>%
+  rename(date = "날짜",
+         district ="측정소명",
+         pm10="미세먼지",
+         pm2.5="초미세먼지") %>% 
+  select(date, district, pm10, pm2.5)
+```
+
+ - 변수의 결측치 이상치 확인하고 처리하기
+   - 문자형 변수
+```{r}
+table(seoulair$date) # 빈도분석으로 date변수의 이상치 확인
+table(seoulair$district)# 빈도분석으로 district 변수의 이상치 확인
+# seoulair에서date가 '전체'가 아니고, district가 '평균'이 아닌 데이터만 추출
+seoulair <- seoulair %>% filter(date!="전체"&district!="평균")
+```
+   - 실수형 변수
+```{r}
+summary(seoulair$pm10)
+summary(seoulair$pm2.5)
+```
+ - 파생 변수 만들기
+   - month, day 만들기
+```{r}
+# month 변수 만들기, 6번째 데이터 시작,7번째 데이터 끝
+seoulair$month <- substr(seoulair$date, 6, 7) 
+# day 변수 만들기, 9번째 데이터 시작, 10번째 데이터 끝
+seoulair$day <- substr(seoulair$date, 9, 10)
+
+class(seoulair$month)# 변수 유형 확인
+class(seoulair$day)
+
+seoulair$month <-as.numeric(seoulair$month) # 변수를 숫자형으로 변환
+seoulair$day <- as.numeric(seoulair$day)
+```
+    - season 변수 만들기
+```{r}
+class(seoulair$month)
+seoulair$season <- ifelse(seoulair$month%in%c("3","4","5"), "spring",
+                        ifelse(seoulair$month%in%c("6","7","8"), "summer",
+                         ifelse(seoulair$month%in%c("9","10","11"),"autumn","winter")))
+# 3,4,5,6,7,8,9,10,11을 캐릭터로 인지
+```
+    - 분석데이터 최종 확인
+```{r}
+str(seoulair)
+```
+ - 데이터 분석
+    - 연간 미세먼지 평균 알아보기
+```{r}
+mean(seoulair$pm10, na.rm = T) # 미세먼지 평균 알아보기기
+```
+    - 미세먼지가 가장 심했던 날짜 알아보기
+```{r}
+seoulair %>% 
+  filter(!is.na(pm10)) %>% # 결측치 없는 자료 추출
+  filter(pm10==max(pm10)) %>% # pm10 최댓값행 추출
+  select(date,district,pm10) # 3개 변수만 출력력
+```
+     - 구별 미세먼지 평균비교
+```{r}
+seoulair %>%
+  filter(!is.na(pm10)) %>% # 결측치가 아닌 행만 추출
+  group_by(district) %>% # 구를 기준으로 데이터 분류
+  summarise(m=mean(pm10)) %>% # 구별로 pm10 평균구하기
+  arrange(m) %>%  # 평균 기준으로 오름차순 정렬
+  head(5) # 상위 5개행 출력력
+```
+     - 계절별 분석
+```{r}
+seoulair %>% 
+  filter(!is.na(pm10)&!is.na(pm2.5)) %>%  # 두개의 시간대의 결측치 동시 제거
+  group_by(season) %>% # season 변수로 데이터 분류
+  summarise(m1=mean(pm10),   # 평균구하기
+            m2=mean(pm2.5)) %>%
+              arrange(m1) # pm10 평균을 기준으로 오름차순 정렬
+              
+```
+     - 미세먼지 등급 분석
+```{r}
+seoulair %>% 
+  filter(!is.na(pm10)) %>%
+  mutate(pm_grade=ifelse(pm10<=30, "good", # pm 변수 만들기
+                         ifelse(pm10<=81, "normal",
+                        ifelse(pm10<=150, "bad", "worse")))) %>%
+  group_by(pm_grade) %>% # 변수를 기준으로 분류
+  summarise(n=n()) %>% # 등급별 빈도 구하기
+  mutate(total=sum(n), # 변수의 빈도 총계구하기
+         pct=round(n/total*100,1)) %>%  # 백분율을 소수점 한자리까지 구하기
+  select(pm_grade,n,pct) %>% #출력변수 지정
+  arrange(desc(n))#빈도 기준으로 내림차순 정렬
+```
+     -구별 미ㅔ먼지 등급 비교
+```{r}
+seoulair %>% 
+  filter(!is.na(pm10)) %>% 
+  mutate(pm_grade=ifelse(pm10<=30, "good",
+                         ifelse(pm10 <= "81", "normal",
+                                ifelse(pm10 <= 150, "bad", "worse")))) %>% 
+  
+  group_by(district,pm_grade) %>%# district별로 pm_grade 등급 분류
+  summarise(n=n()) %>% # 등급별 빈도 구하기
+  mutate(total=sum(n), # 변수의 빈도 총계구하기
+         pct=round(n/total*100,1)) %>%  # 백분율을 소수점 한자리까지 구하기
+  filter(pm_grade=="good") %>% #good 등급 데이터 추출
+  select(district,n,pct) %>% # 3개변수만 추출
+  arrange(desc(pct)) %>% #백분율
+  head(5)
+```
+    - 1년 간 미세먼지 추이를 그래프로 그리기
+```{r}
+ggplot(data=seoulair,aes(x=date,y=pm10))+geom_line()
+```
+    - 계절별 미세먼지 등급 비율 그래프 그리기
+    
+```{r}
+season_grade <- seoulair %>% 
+ filter(!is.na(pm10)) %>% 
+ mutate(pm_grade=ifelse(pm10<=30, "good",
+                         ifelse(pm10 <= "81", "normal",
+                                ifelse(pm10 <= 150, "bad", "worse")))) %>% 
+  group_by(season,pm_grade) %>%# district별로 pm_grade 등급 분류
+  summarise(n=n()) %>% # 등급별 빈도 구하기
+  mutate(total=sum(n), # 변수의 빈도 총계구하기
+         pct=round(n/total*100,1)) %>%  # 백분율을 소수점 한자리까지 구하기
+  select(season,pm_grade,pct)  # 3개변수만 추출
+  
+ggplot(data=season_grade, aes(x=season, y=pct, fill=pm_grade)) +
+   geom_col(position = "dodge") +
+   scale_x_discrete(limits=c("spring","summer","autumn","winter")) +
+   ggtitle("2019년 서울의 계절별 미세먼지 실태") +
+   xlab("계절")+
+   ylab("등급별 비율")
+
+```
+     
+  
+  
+  

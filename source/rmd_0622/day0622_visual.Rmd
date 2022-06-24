@@ -1,5 +1,5 @@
 ---
-title: "day0622_visual"
+title: "0622_R 시각화"
 output:
   html_document:
     keep_md: true
@@ -10,10 +10,9 @@ date: '2022-06-22'
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ```{r}
-# install.packages("ggplot2")
-# install.packages("readxl")
+ # install.packages("ggplot2")
+ # install.packages("readxl")
 ```
 ## ggplot2 강의
 - 데이터 불러오기
